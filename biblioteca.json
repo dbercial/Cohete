@@ -1,0 +1,62 @@
+{
+  "Entorno": {
+    "Defecto": {
+      "latitud": 43.36,
+      "longitud": -5.85,
+      "elevacion": 230.0,
+      "temperatura_suelo": 15.0,
+      "viento_velocidad": 0.0,
+      "viento_direccion": 0.0
+    }
+  },
+  "Motor": {
+    "Defecto": {
+      "curva_empuje": "0.0, 0\n0.1, 2000\n0.3, 1950\n1.0, 1850\n2.0, 1750\n3.0, 1550\n3.6, 1100\n3.9, 0",
+      "masa_seca_motor": 1.815,
+      "radio_tobera": 33.0,
+      "radio_garganta": 11.0,
+      "num_granos": 5,
+      "densidad_grano": 1815.0,
+      "radio_exterior_grano": 33.0,
+      "radio_interior_grano": 15.0,
+      "altura_grano": 120.0,
+      "separacion_granos": 5.0
+    }
+  },
+  "Cohete": {
+    "Defecto": {
+      "diametro": 127.0,
+      "masa": 14.426,
+      "inercia_lateral": 6.321,
+      "inercia_axial": 0.034,
+      "posicion_motor": -1.255,
+      "curva_arrastre": "0.0, 0.45\n0.3, 0.43\n0.6, 0.44\n0.9, 0.55\n1.1, 0.65\n1.5, 0.55",
+      "ojiva_longitud": 0.558,
+      "ojiva_tipo": "von karman",
+      "ojiva_posicion": 1.278,
+      "aletas_numero": 4,
+      "aletas_cuerda_raiz": 0.12,
+      "aletas_cuerda_punta": 0.06,
+      "aletas_envergadura": 0.11,
+      "aletas_posicion": -1.04956,
+      "cola_radio_inferior": 0.0435,
+      "cola_longitud": 0.06,
+      "cola_posicion": -1.194656
+    }
+  },
+  "Paracaídas": {
+    "Defecto": {
+      "drogue_cds": 1.0,
+      "principal_cds": 10.0,
+      "principal_altura": 500.0,
+      "retardo": 1.5
+    }
+  },
+  "Lanzamiento": {
+    "Defecto": {
+      "longitud_rail": 5.2,
+      "inclinacion": 85.0,
+      "rumbo": 0.0
+    }
+  }
+}
