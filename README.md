@@ -116,14 +116,20 @@ negativos hacia la cola.
 | Masa sin motor [kg] | Masa del cohete completo (incluidos paracaídas y electrónica) sin el motor. |
 | Inercia lateral / axial [kg·m²] | Momentos de inercia sin motor: respecto a un eje perpendicular al cohete (cabeceo) y respecto a su eje longitudinal (alabeo). |
 | Posición de la tobera [m] | Dónde queda la salida del motor. |
+| Posición del botón de raíl superior / inferior [m] | Guías que deslizan por el raíl. El cohete queda libre cuando el botón superior sale del raíl. |
 | Coeficiente de arrastre subsónico (Cd) | Cd del cohete a baja velocidad. Valores típicos: 0,35–0,6. |
 | Aumento del Cd cerca de Mach 1 [%] | Cuánto sube el Cd al acercarse a la velocidad del sonido. El Cd es constante hasta Mach 0,8, máximo en Mach 1,05 y baja después. Con 0 % el Cd es constante. |
-| Longitud / Tipo / Posición de la ojiva | Forma del morro y dónde está su base. |
+| Longitud / Tipo / Posición de la ojiva | Forma del morro y dónde está su **punta**. |
 | Número de aletas | Aletas trapezoidales repartidas alrededor del fuselaje. |
 | Cuerda en la raíz / en la punta [m] | Longitud de la aleta junto al fuselaje y en su extremo. |
 | Envergadura de las aletas [m] | Cuánto sobresale cada aleta del fuselaje. |
+| Barrido de las aletas [m] | Distancia, a lo largo del eje, entre el borde de ataque de la raíz y el de la punta. |
 | Posición de las aletas [m] | Posición del borde de ataque de la raíz. |
-| Radio inferior / Longitud / Posición de la cola | Estrechamiento cónico al final del fuselaje. El radio superior es el del fuselaje. |
+| Radio inferior / Longitud / Posición de la cola | Estrechamiento cónico al final del fuselaje; la posición es la de su parte superior y el radio superior es el del fuselaje. Con longitud 0 el cohete no tiene cola. |
+
+El arrastre se define solo con el Cd: la forma de la ojiva y el tamaño de las aletas afectan a
+la estabilidad (margen estático) pero **no** cambian el arrastre. Para comparar diseños, ajusta
+también el Cd (por ejemplo, con el valor que estime OpenRocket para cada uno).
 
 ### Paracaídas
 
@@ -132,7 +138,7 @@ desviarse mucho, y un **principal** que se abre cerca del suelo para aterrizar d
 
 | Parámetro | Descripción |
 |---|---|
-| Cd·S del drogue / principal [m²] | Coeficiente de arrastre por área del paracaídas. Cuanto mayor, más lento cae. Para una cúpula redonda, Cd·S ≈ 0,8 × área. |
+| Cd·S del drogue / principal [m²] | Coeficiente de arrastre por área del paracaídas. Cuanto mayor, más lento cae. Para una cúpula redonda, Cd·S ≈ 0,8 × área. Con 0 el cohete no lleva ese paracaídas (por ejemplo, un único paracaídas en el apogeo: drogue > 0 y principal = 0). |
 | Apertura del principal [m sobre el suelo] | Altura a la que se despliega el principal. |
 | Retardo de apertura [s] | Tiempo entre la orden de apertura y el despliegue efectivo. |
 
@@ -146,9 +152,24 @@ desviarse mucho, y un **principal** que se abre cerca del suelo para aterrizar d
 
 ### Valores fijos
 
-Algunos valores no son editables desde la interfaz y están en `simulacion.py`: la inercia del
-motor seco, la posición de su centro de masas, la posición de los botones del raíl
-(0,082 m y −0,618 m) y el ángulo de inclinación de las aletas (0,5°).
+Algunos valores no son editables desde la interfaz y están en `simulacion.py`:
+
+- La geometría interna del motor se estima a partir de los granos: empiezan a dos radios de la
+  tobera, y la carcasa se trata como un tubo delgado para calcular su inercia y su centro de masas.
+- El ángulo de inclinación de las aletas (0,5°), que hace girar ligeramente al cohete.
+- La simulación se detiene como máximo a los 3600 s de vuelo; si el cohete no ha aterrizado,
+  el resumen lo indica.
+
+## Ejemplos
+
+En `ejemplos/` hay un cohete de 38 mm con motor AeroTech G80T, listo para importar:
+
+- `g80t_base.json`: el modelo base con sus resultados.
+- `g80t_configuraciones.json`: el modelo base y sus iteraciones (masa, diámetro, aletas, ojiva,
+  material, viento y paracaídas) como configuraciones guardadas, para combinarlas.
+- `g80t_modelo.md`: los datos originales del modelo, los del motor y cómo se han traducido.
+- `generar_g80t.py`: regenera los dos JSON a partir de los datos en mm
+  (`.\.venv\Scripts\python.exe ejemplos\generar_g80t.py`).
 
 ## Archivos
 
@@ -159,4 +180,5 @@ motor seco, la posición de su centro de masas, la posición de los botones del 
 | `simulacion.py` | Definición de parámetros, construcción del modelo en RocketPy, simulación y lectura/escritura de JSON. |
 | `biblioteca.json` | Configuraciones guardadas (se crea al guardar la primera). |
 | `resultados/` | Carpeta propuesta por defecto para exportar simulaciones. |
+| `ejemplos/` | Simulaciones y configuraciones de ejemplo para importar. |
 | `requirements.txt` | Dependencias de Python. |

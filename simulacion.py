@@ -8,6 +8,7 @@ from rocketpy import Environment, Flight, Function, Rocket, SolidMotor
 
 RESULTADOS = Path(__file__).parent / "resultados"
 BIBLIOTECA = Path(__file__).parent / "biblioteca.json"
+TIEMPO_MAXIMO = 3600  # s de vuelo simulado como máximo (descensos lentos con paracaídas grandes)
 
 TIPOS_OJIVA = ["von karman", "ogive", "conical", "elliptical", "tangent", "lvhaack", "powerseries"]
 FORMAS_EMPUJE = ["constante", "progresiva", "regresiva", "pico inicial"]
@@ -28,7 +29,7 @@ PARAMETROS = {
         "impulso_total": ("Impulso total [N·s]", 6200.0, 100, 1, 1000000),
         "tiempo_combustion": ("Tiempo de combustión [s]", 3.9, 0.1, 0.1, 300),
         "forma_empuje": ("Forma de la curva de empuje", "regresiva", FORMAS_EMPUJE),
-        "masa_seca_motor": ("Masa seca del motor [kg]", 1.815, 0.01, 0, 1000),
+        "masa_seca_motor": ("Masa seca del motor [kg]", 1.815, 0.001, 0, 1000),
         "radio_tobera": ("Radio de la tobera [mm]", 33.0, 1, 1, 1000),
         "radio_garganta": ("Radio de la garganta [mm]", 11.0, 1, 1, 1000),
         "num_granos": ("Número de granos", 5, 1, 1, 50),
@@ -40,10 +41,12 @@ PARAMETROS = {
     },
     "Cohete": {
         "diametro": ("Diámetro [mm]", 127.0, 1, 1, 2000),
-        "masa": ("Masa sin motor [kg]", 14.426, 0.1, 0.01, 10000),
-        "inercia_lateral": ("Inercia lateral [kg·m²]", 6.321, 0.1, 0, 10000),
-        "inercia_axial": ("Inercia axial [kg·m²]", 0.034, 0.001, 0, 1000),
+        "masa": ("Masa sin motor [kg]", 14.426, 0.01, 0.001, 10000),
+        "inercia_lateral": ("Inercia lateral [kg·m²]", 6.321, 0.0001, 0, 10000),
+        "inercia_axial": ("Inercia axial [kg·m²]", 0.034, 0.00001, 0, 1000),
         "posicion_motor": ("Posición de la tobera [m]", -1.255, 0.01, -50, 50),
+        "boton_superior": ("Posición del botón de raíl superior [m]", 0.082, 0.01, -50, 50),
+        "boton_inferior": ("Posición del botón de raíl inferior [m]", -0.618, 0.01, -50, 50),
         "cd_subsonico": ("Coeficiente de arrastre subsónico (Cd)", 0.45, 0.01, 0.01, 5),
         "aumento_transonico": ("Aumento del Cd cerca de Mach 1 [%]", 40.0, 5, 0, 300),
         "ojiva_longitud": ("Longitud de la ojiva [m]", 0.558, 0.01, 0.01, 10),
@@ -53,13 +56,14 @@ PARAMETROS = {
         "aletas_cuerda_raiz": ("Cuerda en la raíz [m]", 0.120, 0.005, 0.001, 10),
         "aletas_cuerda_punta": ("Cuerda en la punta [m]", 0.060, 0.005, 0, 10),
         "aletas_envergadura": ("Envergadura de las aletas [m]", 0.110, 0.005, 0.001, 10),
+        "aletas_barrido": ("Barrido de las aletas [m]", 0.060, 0.005, -10, 10),
         "aletas_posicion": ("Posición de las aletas [m]", -1.04956, 0.01, -50, 50),
         "cola_radio_inferior": ("Radio inferior de la cola [m]", 0.0435, 0.001, 0, 10),
-        "cola_longitud": ("Longitud de la cola [m]", 0.060, 0.005, 0.001, 10),
+        "cola_longitud": ("Longitud de la cola [m] (0 = sin cola)", 0.060, 0.005, 0, 10),
         "cola_posicion": ("Posición de la cola [m]", -1.194656, 0.01, -50, 50),
     },
     "Paracaídas": {
-        "drogue_cds": ("Cd·S del drogue [m²]", 1.0, 0.1, 0, 1000),
+        "drogue_cds": ("Cd·S del drogue [m²]", 1.0, 0.01, 0, 1000),
         "principal_cds": ("Cd·S del principal [m²]", 10.0, 0.5, 0, 1000),
         "principal_altura": ("Apertura del principal [m sobre el suelo]", 500.0, 50, 0, 100000),
         "retardo": ("Retardo de apertura [s]", 1.5, 0.1, 0, 60),
@@ -132,10 +136,18 @@ def crear_motor(p):
     altura_grano = p["altura_grano"] / 1000
     separacion = p["separacion_granos"] / 1000
     longitud_granos = num_granos * altura_grano + (num_granos - 1) * separacion
+    # Geometría aproximada de la carcasa: los granos empiezan a 2 radios de la tobera y la
+    # carcasa se trata como un tubo delgado centrado en ellos
+    radio_carcasa = p["radio_exterior_grano"] / 1000
+    inicio_granos = 2 * radio_carcasa
+    centro_granos = inicio_granos + longitud_granos / 2
+    longitud_carcasa = inicio_granos + longitud_granos
+    masa_seca = p["masa_seca_motor"]
+    inercia_lateral = masa_seca * (radio_carcasa ** 2 / 2 + longitud_carcasa ** 2 / 12)
     return SolidMotor(
         thrust_source=curva,
-        dry_mass=p["masa_seca_motor"],
-        dry_inertia=(0.125, 0.125, 0.002),
+        dry_mass=masa_seca,
+        dry_inertia=(inercia_lateral, inercia_lateral, masa_seca * radio_carcasa ** 2),
         nozzle_radius=p["radio_tobera"] / 1000,
         grain_number=num_granos,
         grain_density=p["densidad_grano"],
@@ -143,8 +155,8 @@ def crear_motor(p):
         grain_initial_inner_radius=p["radio_interior_grano"] / 1000,
         grain_initial_height=altura_grano,
         grain_separation=separacion,
-        grains_center_of_mass_position=0.08 + longitud_granos / 2,
-        center_of_dry_mass_position=0.317,
+        grains_center_of_mass_position=centro_granos,
+        center_of_dry_mass_position=centro_granos,
         nozzle_position=0,
         burn_time=p["tiempo_combustion"],
         throat_radius=p["radio_garganta"] / 1000,
@@ -169,7 +181,8 @@ def crear_cohete(p, motor):
         coordinate_system_orientation="tail_to_nose",
     )
     cohete.add_motor(motor, position=p["posicion_motor"])
-    cohete.set_rail_buttons(upper_button_position=0.082, lower_button_position=-0.618)
+    cohete.set_rail_buttons(upper_button_position=p["boton_superior"],
+                            lower_button_position=p["boton_inferior"])
 
     cohete.add_nose(length=p["ojiva_longitud"], kind=p["ojiva_tipo"], position=p["ojiva_posicion"])
     cohete.add_trapezoidal_fins(
@@ -178,16 +191,20 @@ def crear_cohete(p, motor):
         tip_chord=p["aletas_cuerda_punta"],
         span=p["aletas_envergadura"],
         position=p["aletas_posicion"],
+        sweep_length=p["aletas_barrido"],
         cant_angle=0.5,
     )
-    cohete.add_tail(top_radius=radio, bottom_radius=p["cola_radio_inferior"],
-                    length=p["cola_longitud"], position=p["cola_posicion"])
+    if p["cola_longitud"] > 0:  # longitud 0 = cohete sin cola
+        cohete.add_tail(top_radius=radio, bottom_radius=p["cola_radio_inferior"],
+                        length=p["cola_longitud"], position=p["cola_posicion"])
 
-    # Drogue en el apogeo y paracaídas principal a cierta altura sobre el suelo
-    cohete.add_parachute("Drogue", cd_s=p["drogue_cds"], trigger="apogee",
-                         sampling_rate=105, lag=p["retardo"])
-    cohete.add_parachute("Principal", cd_s=p["principal_cds"], trigger=p["principal_altura"],
-                         sampling_rate=105, lag=p["retardo"])
+    # Drogue en el apogeo y paracaídas principal a cierta altura sobre el suelo (Cd·S = 0: no lo lleva)
+    if p["drogue_cds"] > 0:
+        cohete.add_parachute("Drogue", cd_s=p["drogue_cds"], trigger="apogee",
+                             sampling_rate=105, lag=p["retardo"])
+    if p["principal_cds"] > 0:
+        cohete.add_parachute("Principal", cd_s=p["principal_cds"], trigger=p["principal_altura"],
+                             sampling_rate=105, lag=p["retardo"])
     return cohete
 
 
@@ -196,7 +213,8 @@ def simular(p):
     env = crear_entorno(p)
     cohete = crear_cohete(p, crear_motor(p))
     vuelo = Flight(rocket=cohete, environment=env, rail_length=p["longitud_rail"],
-                   inclination=p["inclinacion"], heading=p["rumbo"])
+                   inclination=p["inclinacion"], heading=p["rumbo"], max_time=TIEMPO_MAXIMO,
+                   max_time_step=1)  # sin límite de paso el integrador se pierde en vuelos largos
     return cohete, vuelo
 
 
@@ -211,6 +229,7 @@ def extraer_resultados(cohete, vuelo):
         "tiempo_apogeo": float(vuelo.apogee_time),
         "velocidad_maxima": float(vuelo.max_speed),
         "mach_maximo": float(vuelo.max_mach_number),
+        "aterriza": bool(vuelo.z(vuelo.t_final) - elevacion < 1),
         "tiempo_impacto": float(vuelo.t_final),
         "velocidad_impacto": float(abs(vuelo.impact_velocity)),
         "x_impacto": float(vuelo.x_impact),
@@ -229,13 +248,17 @@ def extraer_resultados(cohete, vuelo):
 
 def resumen(resultados):
     m = resultados["metricas"]
+    if m.get("aterriza", True):
+        impacto = (f"Impacto: t = {m['tiempo_impacto']:.1f} s, a {m['velocidad_impacto']:.1f} m/s, "
+                   f"en x = {m['x_impacto']:.0f} m, y = {m['y_impacto']:.0f} m")
+    else:
+        impacto = f"Impacto: no llega al suelo en los {m['tiempo_impacto']:.0f} s simulados"
     return "\n".join([
         f"Margen estático inicial: {m['margen_estatico']:.2f} calibres",
         f"Velocidad al salir del raíl: {m['velocidad_salida_rail']:.1f} m/s",
         f"Apogeo: {m['apogeo']:.0f} m sobre el suelo (t = {m['tiempo_apogeo']:.1f} s)",
         f"Velocidad máxima: {m['velocidad_maxima']:.1f} m/s (Mach {m['mach_maximo']:.2f})",
-        f"Impacto: t = {m['tiempo_impacto']:.1f} s, a {m['velocidad_impacto']:.1f} m/s, "
-        f"en x = {m['x_impacto']:.0f} m, y = {m['y_impacto']:.0f} m",
+        impacto,
     ])
 
 
