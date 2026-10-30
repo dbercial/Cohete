@@ -13,65 +13,66 @@ TIEMPO_MAXIMO = 3600  # s de vuelo simulado como máximo (descensos lentos con p
 TIPOS_OJIVA = ["von karman", "ogive", "conical", "elliptical", "tangent", "lvhaack", "powerseries"]
 FORMAS_EMPUJE = ["constante", "progresiva", "regresiva", "pico inicial"]
 
-# Parámetros de entrada agrupados por sección.
-# Numéricos: clave -> (etiqueta, valor por defecto, paso, mínimo, máximo).
-# Opciones: clave -> (etiqueta, valor por defecto, lista de opciones).
+# Parámetros de entrada agrupados por sección. Valores en SI, salvo la magnitud "longitud_mm" (mm).
+# Las etiquetas visibles están en textos.py y las unidades se eligen en unidades.py.
+# Numéricos: clave -> (magnitud, valor por defecto, paso, mínimo, máximo).
+# Opciones: clave -> ("opcion", valor por defecto, lista de opciones).
 PARAMETROS = {
     "Entorno": {
-        "latitud": ("Latitud [°]", 43.36, 0.01, -90, 90),
-        "longitud": ("Longitud [°]", -5.85, 0.01, -180, 180),
-        "elevacion": ("Elevación del lugar [m]", 230.0, 10, -500, 9000),
-        "temperatura_suelo": ("Temperatura en el suelo [°C]", 15.0, 1, -60, 60),
-        "viento_velocidad": ("Velocidad del viento [m/s]", 0.0, 0.5, 0, 50),
-        "viento_direccion": ("Dirección de procedencia del viento [°]", 0.0, 15, 0, 360),
+        "latitud": ("grados", 43.36, 0.01, -90, 90),
+        "longitud": ("grados", -5.85, 0.01, -180, 180),
+        "elevacion": ("distancia", 230.0, 10, -500, 9000),
+        "temperatura_suelo": ("temperatura", 15.0, 1, -60, 60),
+        "viento_velocidad": ("velocidad_viento", 0.0, 0.5, 0, 50),
+        "viento_direccion": ("angulo", 0.0, 15, 0, 360),
     },
     "Motor": {
-        "impulso_total": ("Impulso total [N·s]", 6200.0, 100, 1, 1000000),
-        "tiempo_combustion": ("Tiempo de combustión [s]", 3.9, 0.1, 0.1, 300),
-        "forma_empuje": ("Forma de la curva de empuje", "regresiva", FORMAS_EMPUJE),
-        "masa_seca_motor": ("Masa seca del motor [kg]", 1.815, 0.001, 0, 1000),
-        "radio_tobera": ("Radio de la tobera [mm]", 33.0, 1, 1, 1000),
-        "radio_garganta": ("Radio de la garganta [mm]", 11.0, 1, 1, 1000),
-        "num_granos": ("Número de granos", 5, 1, 1, 50),
-        "densidad_grano": ("Densidad del propelente [kg/m³]", 1815.0, 10, 1, 10000),
-        "radio_exterior_grano": ("Radio exterior del grano [mm]", 33.0, 1, 1, 1000),
-        "radio_interior_grano": ("Radio interior inicial del grano [mm]", 15.0, 1, 0, 1000),
-        "altura_grano": ("Altura del grano [mm]", 120.0, 5, 1, 5000),
-        "separacion_granos": ("Separación entre granos [mm]", 5.0, 1, 0, 1000),
+        "impulso_total": ("impulso", 6200.0, 100, 1, 1000000),
+        "tiempo_combustion": ("tiempo", 3.9, 0.1, 0.1, 300),
+        "forma_empuje": ("opcion", "regresiva", FORMAS_EMPUJE),
+        "masa_seca_motor": ("masa", 1.815, 0.001, 0, 1000),
+        "radio_tobera": ("longitud_mm", 33.0, 1, 1, 1000),
+        "radio_garganta": ("longitud_mm", 11.0, 1, 1, 1000),
+        "num_granos": ("entero", 5, 1, 1, 50),
+        "densidad_grano": ("densidad", 1815.0, 10, 1, 10000),
+        "radio_exterior_grano": ("longitud_mm", 33.0, 1, 1, 1000),
+        "radio_interior_grano": ("longitud_mm", 15.0, 1, 0, 1000),
+        "altura_grano": ("longitud_mm", 120.0, 5, 1, 5000),
+        "separacion_granos": ("longitud_mm", 5.0, 1, 0, 1000),
     },
     "Cohete": {
-        "diametro": ("Diámetro [mm]", 127.0, 1, 1, 2000),
-        "masa": ("Masa sin motor [kg]", 14.426, 0.01, 0.001, 10000),
-        "inercia_lateral": ("Inercia lateral [kg·m²]", 6.321, 0.0001, 0, 10000),
-        "inercia_axial": ("Inercia axial [kg·m²]", 0.034, 0.00001, 0, 1000),
-        "posicion_motor": ("Posición de la tobera [m]", -1.255, 0.01, -50, 50),
-        "boton_superior": ("Posición del botón de raíl superior [m]", 0.082, 0.01, -50, 50),
-        "boton_inferior": ("Posición del botón de raíl inferior [m]", -0.618, 0.01, -50, 50),
-        "cd_subsonico": ("Coeficiente de arrastre subsónico (Cd)", 0.45, 0.01, 0.01, 5),
-        "aumento_transonico": ("Aumento del Cd cerca de Mach 1 [%]", 40.0, 5, 0, 300),
-        "ojiva_longitud": ("Longitud de la ojiva [m]", 0.558, 0.01, 0.01, 10),
-        "ojiva_tipo": ("Tipo de ojiva", "von karman", TIPOS_OJIVA),
-        "ojiva_posicion": ("Posición de la ojiva [m]", 1.278, 0.01, -50, 50),
-        "aletas_numero": ("Número de aletas", 4, 1, 1, 12),
-        "aletas_cuerda_raiz": ("Cuerda en la raíz [m]", 0.120, 0.005, 0.001, 10),
-        "aletas_cuerda_punta": ("Cuerda en la punta [m]", 0.060, 0.005, 0, 10),
-        "aletas_envergadura": ("Envergadura de las aletas [m]", 0.110, 0.005, 0.001, 10),
-        "aletas_barrido": ("Barrido de las aletas [m]", 0.060, 0.005, -10, 10),
-        "aletas_posicion": ("Posición de las aletas [m]", -1.04956, 0.01, -50, 50),
-        "cola_radio_inferior": ("Radio inferior de la cola [m]", 0.0435, 0.001, 0, 10),
-        "cola_longitud": ("Longitud de la cola [m] (0 = sin cola)", 0.060, 0.005, 0, 10),
-        "cola_posicion": ("Posición de la cola [m]", -1.194656, 0.01, -50, 50),
+        "diametro": ("longitud_mm", 127.0, 1, 1, 2000),
+        "masa": ("masa", 14.426, 0.01, 0.001, 10000),
+        "inercia_lateral": ("inercia", 6.321, 0.0001, 0, 10000),
+        "inercia_axial": ("inercia", 0.034, 0.00001, 0, 1000),
+        "posicion_motor": ("longitud", -1.255, 0.01, -50, 50),
+        "boton_superior": ("longitud", 0.082, 0.01, -50, 50),
+        "boton_inferior": ("longitud", -0.618, 0.01, -50, 50),
+        "cd_subsonico": ("adimensional", 0.45, 0.01, 0.01, 5),
+        "aumento_transonico": ("porcentaje", 40.0, 5, 0, 300),
+        "ojiva_longitud": ("longitud", 0.558, 0.01, 0.01, 10),
+        "ojiva_tipo": ("opcion", "von karman", TIPOS_OJIVA),
+        "ojiva_posicion": ("longitud", 1.278, 0.01, -50, 50),
+        "aletas_numero": ("entero", 4, 1, 1, 12),
+        "aletas_cuerda_raiz": ("longitud", 0.120, 0.005, 0.001, 10),
+        "aletas_cuerda_punta": ("longitud", 0.060, 0.005, 0, 10),
+        "aletas_envergadura": ("longitud", 0.110, 0.005, 0.001, 10),
+        "aletas_barrido": ("longitud", 0.060, 0.005, -10, 10),
+        "aletas_posicion": ("longitud", -1.04956, 0.01, -50, 50),
+        "cola_radio_inferior": ("longitud", 0.0435, 0.001, 0, 10),
+        "cola_longitud": ("longitud", 0.060, 0.005, 0, 10),
+        "cola_posicion": ("longitud", -1.194656, 0.01, -50, 50),
     },
     "Paracaídas": {
-        "drogue_cds": ("Cd·S del drogue [m²]", 1.0, 0.01, 0, 1000),
-        "principal_cds": ("Cd·S del principal [m²]", 10.0, 0.5, 0, 1000),
-        "principal_altura": ("Apertura del principal [m sobre el suelo]", 500.0, 50, 0, 100000),
-        "retardo": ("Retardo de apertura [s]", 1.5, 0.1, 0, 60),
+        "drogue_cds": ("area", 1.0, 0.01, 0, 1000),
+        "principal_cds": ("area", 10.0, 0.5, 0, 1000),
+        "principal_altura": ("distancia", 500.0, 50, 0, 100000),
+        "retardo": ("tiempo", 1.5, 0.1, 0, 60),
     },
     "Lanzamiento": {
-        "longitud_rail": ("Longitud del raíl [m]", 5.2, 0.1, 0.1, 100),
-        "inclinacion": ("Inclinación [°]", 85.0, 1, 0, 90),
-        "rumbo": ("Rumbo [°] (0 = Norte)", 0.0, 5, 0, 360),
+        "longitud_rail": ("distancia", 5.2, 0.1, 0.1, 100),
+        "inclinacion": ("angulo", 85.0, 1, 0, 90),
+        "rumbo": ("angulo", 0.0, 5, 0, 360),
     },
 }
 
@@ -244,40 +245,6 @@ def extraer_resultados(cohete, vuelo):
         "y": vuelo.y(t),
     }
     return {"metricas": metricas, "series": {k: [float(v) for v in vals] for k, vals in series.items()}}
-
-
-def resumen(resultados):
-    m = resultados["metricas"]
-    if m.get("aterriza", True):
-        impacto = (f"Impacto: t = {m['tiempo_impacto']:.1f} s, a {m['velocidad_impacto']:.1f} m/s, "
-                   f"en x = {m['x_impacto']:.0f} m, y = {m['y_impacto']:.0f} m")
-    else:
-        impacto = f"Impacto: no llega al suelo en los {m['tiempo_impacto']:.0f} s simulados"
-    return "\n".join([
-        f"Margen estático inicial: {m['margen_estatico']:.2f} calibres",
-        f"Velocidad al salir del raíl: {m['velocidad_salida_rail']:.1f} m/s",
-        f"Apogeo: {m['apogeo']:.0f} m sobre el suelo (t = {m['tiempo_apogeo']:.1f} s)",
-        f"Velocidad máxima: {m['velocidad_maxima']:.1f} m/s (Mach {m['mach_maximo']:.2f})",
-        impacto,
-    ])
-
-
-def dibujar_graficas(resultados, fig):
-    """Dibuja altitud, velocidad, aceleración y trayectoria en la figura dada."""
-    s = resultados["series"]
-    fig.clear()
-    ejes = fig.subplots(2, 2)
-    ejes[0, 0].plot(s["t"], s["altitud"])
-    ejes[0, 0].set(title="Altitud sobre el suelo", xlabel="t [s]", ylabel="h [m]")
-    ejes[0, 1].plot(s["t"], s["velocidad"])
-    ejes[0, 1].set(title="Velocidad", xlabel="t [s]", ylabel="v [m/s]")
-    ejes[1, 0].plot(s["t"], s["aceleracion"])
-    ejes[1, 0].set(title="Aceleración", xlabel="t [s]", ylabel="a [m/s²]")
-    ejes[1, 1].plot(s["x"], s["y"])
-    ejes[1, 1].set(title="Trayectoria horizontal", xlabel="x (Este) [m]", ylabel="y (Norte) [m]")
-    for eje in ejes.flat:
-        eje.grid(True)
-    fig.tight_layout()
 
 
 def escribir_json(ruta, datos):

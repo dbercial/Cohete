@@ -35,6 +35,23 @@ derecha.
 2. Pulsa **Simular**. En unos segundos aparecen el resumen y las gráficas.
 3. **Valores por defecto** devuelve todas las pestañas a la configuración inicial.
 
+En el menú **Ayuda → Manual de uso** (o con la tecla **F1**) se abre un manual con todo lo
+necesario para usar la aplicación.
+
+### Idioma y unidades
+
+- **Idioma:** español o inglés. Cambia toda la interfaz: pestañas, parámetros, mensajes,
+  resultados, gráficas y manual.
+- **Unidades:** sistema métrico (m, mm, kg, N·s, °C, m/s) o imperial (ft, in, lb, lbf·s, °F,
+  ft/s y mph para el viento).
+
+Las unidades solo cambian lo que se muestra: las configuraciones guardadas y los JSON se guardan
+siempre en el sistema métrico, así que valen con cualquier elección. Cambiar de unidades no
+altera los valores (no se acumulan redondeos). El idioma y las unidades elegidos se recuerdan en
+`preferencias.json`.
+
+Las tablas de parámetros de este README usan las unidades del sistema métrico.
+
 ### Resultados
 
 - **Margen estático inicial** (en calibres): distancia entre el centro de presiones y el centro
@@ -178,7 +195,11 @@ En `ejemplos/` hay un cohete de 38 mm con motor AeroTech G80T, listo para import
 | `Cohete.bat` | Lanzador. |
 | `interfaz.py` | Interfaz gráfica (tkinter). |
 | `simulacion.py` | Definición de parámetros, construcción del modelo en RocketPy, simulación y lectura/escritura de JSON. |
+| `presentacion.py` | Resumen de resultados y gráficas, en el idioma y las unidades elegidos. |
+| `textos.py` | Textos de la interfaz y del manual en español e inglés. |
+| `unidades.py` | Sistemas de unidades y conversiones. |
 | `biblioteca.json` | Configuraciones guardadas (se crea al guardar la primera). |
+| `preferencias.json` | Idioma y unidades elegidos (se crea al cambiarlos). |
 | `resultados/` | Carpeta propuesta por defecto para exportar simulaciones. |
 | `ejemplos/` | Simulaciones y configuraciones de ejemplo para importar. |
 | `requirements.txt` | Dependencias de Python. |

@@ -10,8 +10,9 @@ from pathlib import Path
 
 PROYECTO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROYECTO))
+from presentacion import resumen  # noqa: E402
 from simulacion import (exportar_biblioteca, extraer_resultados, guardar_json,  # noqa: E402
-                        parametros_por_defecto, resumen, simular, PARAMETROS)
+                        parametros_por_defecto, simular, PARAMETROS)
 
 # Densidades [g/cm³] y espesores [mm] supuestos por material
 MATERIALES = {
